@@ -1,0 +1,13 @@
+import json
+
+data = {"sn":"21023133","devs":[{"id":"1", "name":"artica3", "ts":"2021-02-25T15:00:00", "type":"IEC102 Meter LPH","reg":[{"V":181.00,"N":"EAI","U":"kWh"},{"V":0.00,"N":"EAE","U":"kWh"},{"V":42.00,"N":"ERII","U":"kvarh"},{"V":0.00,"N":"ERIE","U":"kvarh"},{"V":0.00,"N":"ERCE","U":"kvarh"},{"V":0.00,"N":"ERCI","U":"kvarh"},{"V":0.00,"N":"Q_EAI","U":""},{"V":0.00,"N":"Q_EAE","U":""},{"V":0.00,"N":"Q_ERII","U":""},{"V":0.00,"N":"Q_ERIE","U":""},{"V":0.00,"N":"Q_ERCE","U":""},{"V":0.00,"N":"Q_ERCI","U":""}]}]}
+
+#encoded
+data_string = json.dumps(data)
+
+#Decoded
+decoded = json.loads(data_string)
+
+print (str(decoded["devs"][0]["ts"]))
+print (str(decoded["devs"][0]["reg"][0]["V"]))
+print (str(decoded["devs"][0]["reg"][2]["V"]))

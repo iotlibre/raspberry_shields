@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+
+import configparser
+
+import paho.mqtt.client as mqtt
+
+from urllib.request import urlopen
+
+import logging
+from logging.handlers import RotatingFileHandler
+
+import json
+
+
+
+# Para obtener mas detalle: level=logging.DEBUG
+# Para comprobar el funcionamiento: level=logging.INFO
+logging.basicConfig(
+        level=logging.INFO,
+        handlers=[RotatingFileHandler('./logs/log_emoncms.log', maxBytes=1000000, backupCount=10)],
+        format='%(asctime)s %(levelname)s %(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S %p')
+
+# Parseo de variables del .ini
+parser = configparser.ConfigParser()
+parser.read('config_emon.ini')
+
+# Parseo de las variables de emonCMS
+tx_cms_ip = parser.get('emoncms','cms_ip')
+tx_key = parser.get('emoncms','key')
+mqtt_topic = parser.get('listener','topic')
+listener_name = parser.get('listener','name')
+mqtt_ip = parser.get('listener','mqtt_ip')
+mqtt_login = parser.get('listener','mqtt_login')
+mqtt_password = parser.get('listener','mqtt_password')
+
+
+
+def tx_emoncms(url_long_):
+    result = 'ok'
+
+    try:
+        response = urlopen(url_long_, timeout=5)
+    except:
+        result="time_out"
+        logging.info("timeout: tx_emoncms(url_long_)")
+        
+    # print response.getcode()
+
+def on_connect(client, obj, flags, rc):
+    logging.debug("rc: " + str(rc))
+    client.subscribe(mqtt_topic)
+
+def on_message(client, userdata, msg):
+    cadena = msg.topic
+    data_string = msg.payload
+    decoded_ok = 1
+    
+    logging.info("emoncms payload:")
+    logging.info(data_string)
+    
+    #Decoded
+    decoded = json.loads(data_string)
+    
+    try:
+        name_1=     str(decoded["name"])
+        value_1 =   str(decoded["value"])
+
+    except:
+        logging.info("error in decoded")
+        decoded_ok = 0
+    
+    if decoded_ok == 1:
+        url_long= 'http://{0}/emoncms/input/post?node={1}&fulljson={{"{2}":{3}}}&apikey={4}'
+        url_long=url_long.format(tx_cms_ip, listener_name, name_1, value_1, tx_key)
+        
+    else:
+        url_long= 'http://{0}/emoncms/input/post?node={1}&fulljson={{"{2}":{3}}}&apikey={4}'
+        url_long=url_long.format(tx_cms_ip, listener_name, "error", "1", tx_key)
+
+    
+    logging.info(url_long)
+    tx_emoncms(url_long)
+
+    
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+       result="Unexpected disconnection"
+       logging.info("Unexpected disconnection")
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+client.on_diconnect = on_disconnect
+
+
+client.username_pw_set(mqtt_login,mqtt_password)
+client.connect(mqtt_ip, 1883, 60)
+client.loop_forever(timeout=1.0, max_packets=1, retry_first_connection=False)
+
+
+
+
+
