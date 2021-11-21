@@ -33,6 +33,7 @@ publish_time = parser.get('talker','publish_time')
 if __name__ == '__main__':
     with serial.Serial(None, 115200, timeout=1) as arduino:
         arduino.port = "/dev/serie_arduino"
+        arduino.port = "/dev/ttyUSB0"
 
         while 1:
             try:
