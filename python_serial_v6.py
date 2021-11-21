@@ -29,11 +29,13 @@ parser.read('config_serial.ini')
 listener_name = parser.get('talker','name')
 mqtt_ip = parser.get('talker','mqtt_ip')
 publish_time = parser.get('talker','publish_time')
+tty_serial = parser.get('talker','tty')
+
 
 if __name__ == '__main__':
     with serial.Serial(None, 115200, timeout=1) as arduino:
-        arduino.port = "/dev/serie_arduino"
-        arduino.port = "/dev/ttyUSB0"
+        # arduino.port = "/dev/serie_arduino"
+        arduino.port = "/dev/"+ str(tty_serial)
 
         while 1:
             try:
