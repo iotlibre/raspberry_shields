@@ -41,33 +41,38 @@ listener_name = parser.get('talker','name')
 mqtt_ip = parser.get('talker','mqtt_ip')
 publish_time = parser.get('talker','publish_time')
 
+last_tx = time.time()
 
 
-while 1:   
-    for sonda in sondas:
-        result = 'ok'
-        try:
-            sonda_name = sonda.split("/")[5]
-            sonda_name = sonda_name[9:15]
+while 1:
+    time.sleep(1)  
+    if(time.time()-last_tx) > float(publish_time):
+        last_tx = time.time()
+        for sonda in sondas:
+            result = 'ok'
+            try:
+                sonda_name = sonda.split("/")[5]
+                sonda_name = sonda_name[9:15]
+                
+                sonda_file = open(sonda,'r')
+                sonda_text = sonda_file.read()
+                sonda_file.close()
+                
+                sonda_temper = sonda_text.split("\n")[1].split(" ")[9]
+                sonda_temper = float(sonda_temper[2:])
+                sonda_temper = sonda_temper/1000
+                sonda_temper = round(sonda_temper,1)
+                
+            except:
+                result="time_out"
+                logging.info("time_out sonda reading")
+                
+            if result == 'ok':
+                logging.info(sonda_name + ": " + str(sonda_temper))
+                publish.single("t_sensor/" + sonda_name, sonda_temper, hostname= mqtt_ip)
             
-            sonda_file = open(sonda,'r')
-            sonda_text = sonda_file.read()
-            sonda_file.close()
-            
-            sonda_temper = sonda_text.split("\n")[1].split(" ")[9]
-            sonda_temper = float(sonda_temper[2:])
-            sonda_temper = sonda_temper/1000
-            sonda_temper = round(sonda_temper,1)
-            
-        except:
-            result="time_out"
-            logging.info("time_out sonda reading")
-            
-        if result == 'ok':
-            logging.info(sonda_name + ": " + str(sonda_temper))
-            publish.single("t_sensor/" + sonda_name, sonda_temper, hostname= mqtt_ip)
-        
-        time.sleep(int(publish_time))
+            # time.sleep(int(publish_time))
+            time.sleep(1)
 
     
     
