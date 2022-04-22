@@ -73,11 +73,12 @@ logging.info(server_register_list)
 
 def mqtt_tx(m_server, s_register, s_value):
     logging.info(m_server + "  " + s_register + "  " + s_value)
+    mqtt_site = parser.get('mqtt_broker','site')
     mqtt_ip = parser.get('mqtt_broker','mqtt_ip')
     mqtt_username = parser.get('mqtt_broker','login')
     mqtt_password = parser.get('mqtt_broker','password')
     mqtt_auth = { 'username': mqtt_username, 'password': mqtt_password }
-    publish.single("m_sensor/" + m_server + "/"+ s_register, s_value, hostname=mqtt_ip, auth=mqtt_auth)  
+    publish.single(mqtt_site + "/" + m_server + "/" + s_register, s_value, hostname=mqtt_ip, auth=mqtt_auth)  
 
 
 # FUNCION: preguntar holding valor por MODBUS
