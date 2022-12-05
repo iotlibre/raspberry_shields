@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client import ModbusTcpClient as ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 
@@ -86,7 +86,7 @@ def read_holding_value(tx_server_, tx_register_):
     time.sleep(0.2)
     tx_start = int(parser.get(tx_register_,'start'))
     tx_count = int(parser.get(tx_register_,'registers'))
-    tx_unit = int(parser.get(tx_server_,'unit'))
+    tx_slave = int(parser.get(tx_server_,'slave'))
     st_byteorder = parser.get(tx_server_,'byteorder')
     exec("global tx_byteorder\ntx_byteorder = %s" % (st_byteorder))
     st_wordorder = parser.get(tx_server_,'wordorder')
@@ -96,7 +96,7 @@ def read_holding_value(tx_server_, tx_register_):
     value = 33.33
 
     try:
-        res1 = cli.read_holding_registers(tx_start, count=tx_count, unit=tx_unit)
+        res1 = cli.read_holding_registers(tx_start, count=tx_count, slave=tx_slave)
         logging.debug('tx_byteorder: '+ tx_byteorder)
         logging.debug('tx_wordorder: '+ tx_wordorder)
         decoder = BinaryPayloadDecoder.fromRegisters(res1.registers,
